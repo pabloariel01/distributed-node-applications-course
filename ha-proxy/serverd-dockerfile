@@ -1,0 +1,5 @@
+FROM haproxytech/haproxy-ubuntu:2.0
+COPY load-balance.cfg /usr/local/etc/haproxy/haproxy.cfg
+
+#  docker build -f .\serverd-dockerfile -t server-haproxy . 
+#docker run -d --name server-haproxy -p 3000:3000 server-hapro
