@@ -1,0 +1,12 @@
+FROM node:14.8.0-alpine3.12 AS deps
+
+WORKDIR /srv
+COPY package*.json ./
+RUN npm i --only=production
+
+
+COPY . .
+EXPOSE 1337
+ENV HOST 0.0.0.0
+ENV PORT 1337
+CMD ["node", "producer-http-basic.js"]

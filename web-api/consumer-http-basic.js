@@ -14,6 +14,8 @@ server.get("/", async () => {
   };
 });
 
+server.get('/hello', async () => 'Hello');
+
 server.listen(PORT, HOST, () => {
   console.log(`Consumer running at http://${HOST}:${PORT}/`);
 });

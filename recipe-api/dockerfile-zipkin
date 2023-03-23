@@ -1,0 +1,6 @@
+FROM node:14.8.0-alpine3.12
+WORKDIR /srv
+COPY package*.json ./
+RUN npm i
+COPY . .
+CMD [ "node", "producer-http-zipkin.js" ]
