@@ -70,3 +70,73 @@ Signals
     process.on('SIGHUP', () => console.log('Received: SIGHUP'));
     process.on('SIGINT', () => console.log('Received: SIGINT'));
 ```
+
+
+###reconnection to DB
+
+docker run --name distnode-postgres  -it --rm -p 5432:5432 -e POSTGRES_PASSWORD=hunter2 -e POSTGRES_USER=user -e POSTGRES_DB=dbconn postgres:12.3
+
+##pooling
+  keep in mind service instances to determine max connection pool size(less than half of connections), 6 servers, 100 conns => 50(half)/6(servers)= 8(max)
+
+  pooling is faster than many querys over same connection
+
+##migrations with knex
+
+  $ mkdir migrations && cd migrations
+$ npm init -y
+$ npm install knex@0.21 pg@8.2
+$ npm install -g knex@0.21
+$ knex init
+
+
+knex migrate:currentVersion
+
+knex migrate:make create_users
+
+knex migrate:list
+knex migrate:up
+
+knex migrate:make create_groups
+knex migrate:latest
+
+
+###failures
+HTTP errors in the 5XX range, require some further consideration. If the request is considered idempotent(GET|PUT|DELETE), then it may be retried(all verbs but POST); otherwise, the request should be considered a failure at that point.
+
+Any message that results in a 4XX HTTP error should not be retried
+
+##distributed primitives
+
+redis
+docker run -it --rm --name distnode-redis p 6379:6379  redis:6.0.5-alpine
+docker exec -it distnode-redis redis-cli
+
+
+Atomicity is a property of a series of actions where either all or none of the actions are performed
+
+Redis does provide a mechanism to ensure that multiple commands are executed atomically.(MULTI,EXEC)
+
+lua scripts" perform atomically:
+  As a rule of thumb, you should only use Lua scripts if it’s impossible to perform the same actions atomically with regular commands and transactions
+
+  ##kubernetes secrets
+  ```
+  apiVersion: v1
+kind: Secret
+metadata:
+  name: redisprod
+type: Opaque
+stringData:
+  redisconn: "redis://admin:hunter2@192.168.2.1"
+  ```
+
+  to read 
+  ```
+  env:
+- name: REDIS
+  valueFrom:
+    secretKeyRef:
+      name: redisprod
+      key: redisconn
+  ```
